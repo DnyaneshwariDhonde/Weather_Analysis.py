@@ -2,52 +2,44 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# WeatherMap API Key 
-API_KEY = "b7d2236616c14507b7262117250502"
-BASE_URL = "https://www.weatherapi.com/my/"
+api_key = "478a8dd048f49049c939d8dde4fa929d"
 
-# List of cities to check weather for
-cities = ["New York", "London", "Tokyo", "Paris", "Delhi"]
+cities = ["New York", "London", "Tokyo", "Mumbai", "Sydney","pune"]
 
-# Function to fetch weather data
-def get_weather(city):
-    params = {"q": city, "appid": API_KEY, "units": "metric"}
-    response = requests.get(BASE_URL, params=params)
+weather_data = []
+
+for city in cities:
+    url = f"http://weatherapi.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+    response = requests.get(url)
+
     if response.status_code == 200:
         data = response.json()
-        return {
+        weather = {
             "City": city,
             "Temperature": data["main"]["temp"],
             "Weather": data["weather"][0]["description"],
-            "Humidity": data["main"]["humidity"],
+            "Humidity": data["main"]["humidity"]
         }
+        weather_data.append(weather)
     else:
-        print(f"Failed to fetch weather for {city}")
-        return None
+        print(f"Error fetching data for {city}: {response.json()}")
 
-# Fetch weather data for all cities
-weather_data = [get_weather(city) for city in cities]
-weather_data = [data for data in weather_data if data]  # Remove failed requests
 
-# Create DataFrame
 df = pd.DataFrame(weather_data)
 
-# Display DataFrame
-print(df)
+print("\nWeather Data:")
+display(df)
 
-# Plot Bar Chart of Temperatures
-plt.figure(figsize=(8, 5))
-plt.bar(df["City"], df["Temperature"], color=["blue", "green", "red", "orange", "purple"])
+plt.figure(figsize=(10, 6))
+plt.bar(df["City"], df["Temperature"], color="skyblue")
 plt.xlabel("City")
 plt.ylabel("Temperature (°C)")
-plt.title("Current Temperatures in Different Cities")
+plt.title("Current Temperatures of Cities")
+plt.xticks(rotation=45)
 plt.show()
 
-# Find Hottest and Coldest City
-hottest_city = df.loc[df["Temperature"].idxmax()]
-coldest_city = df.loc[df["Temperature"].idxmin()]
+max_temp_city = df.loc[df["Temperature"].idxmax()]
+min_temp_city = df.loc[df["Temperature"].idxmin()]
 
-print(f"Hottest City: {hottest_city['City']} with {hottest_city['Temperature']}°C")
-print(f"Coldest City: {coldest_city['City']} with {coldest_city['Temperature']}°C")
-
-
+print(f"\n The hottest city is {max_temp_city['City']} with {max_temp_city['Temperature']}°C.")
+print(f" The coldest city is {min_temp_city['City']} with {min_temp_city['Temperature']}°C.")
